@@ -12,10 +12,10 @@ import random
 
 
 class CNN(pl.LightningModule):
-  def __init__(self,filters,activation,BatchNorm,dropout,learning_rate,input_size,kernel_size,pool_kernel_size):
+  def __init__(self,filters,activation,BatchNorm,dropout,learning_rate,input_size,kernel_size,pool_kernel_size,pool_stride):
     dense_size = input_size
     for i in filters:
-      dense_size = dense_size-kernel_size+1-pool_kernel_size+1
+      dense_size = (dense_size-kernel_size+1-pool_kernel_size)//pool_stride +1
     self.dense_size = dense_size
     super(CNN,self).__init__()
     self.train_step_acc = []
@@ -26,25 +26,25 @@ class CNN(pl.LightningModule):
     self.learning_rate = learning_rate
     layers = []
     layers.append(nn.Conv2d(3,filters[0],kernel_size = kernel_size,stride = 1,padding = 0))
-    layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = 1))
+    layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = pool_stride))
     layers.append(activation)
     for i in range(0,3):
       layers.append(nn.Conv2d(filters[i],filters[i+1],kernel_size = kernel_size,stride = 1,padding = 0))
-      layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = 1))
+      layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = pool_stride))
       layers.append( activation)
 
     layers.append(nn.Conv2d(filters[3],filters[4],kernel_size = kernel_size,stride = 1,padding = 0))
-    layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = 1))
+    layers.append(nn.MaxPool2d(kernel_size = pool_kernel_size,stride = pool_stride))
     layers.append( activation)
     layers.append(nn.Flatten())
     
-    if(BatchNorm == "Yes"):
+    if(BatchNorm == True):
       layers.append(nn.BatchNorm1d(filters[4]*self.dense_size*self.dense_size))
     layers.append(nn.Dropout(p=dropout))
 
     layers.append(nn.Linear(filters[4]*self.dense_size*self.dense_size,256 ))
     layers.append( activation)
-    if(BatchNorm == "Yes"):
+    if(BatchNorm == True):
       layers.append(nn.BatchNorm1d(256))
     layers.append(nn.Dropout(p=dropout))
     layers.append(nn.Linear(256,10 ))
@@ -72,11 +72,11 @@ class CNN(pl.LightningModule):
     return loss
 
   def on_train_epoch_end(self):
+    
     train_acc =  torch.stack(self.train_step_acc).mean()
     train_loss =  torch.stack(self.train_step_loss).mean()
     val_acc =  torch.stack(self.val_step_acc).mean()
     val_loss =  torch.stack(self.val_step_loss).mean()
-
     wandb.log({"train_loss":train_loss.item(),"train_acc":train_acc.item(),"val_loss":val_loss.item(),"val_acc":val_acc.item()})
     self.train_step_acc.clear() 
     self.train_step_loss.clear() 
@@ -161,8 +161,6 @@ baseDir = dataset_path
 trainDir = baseDir+"/train/"
 testDir = baseDir+"/val/"
 outputclasses=["Amphibia", "Animalia", "Arachnida", "Aves", "Fungi", "Insecta", "Mammalia", "Mollusca", "Plantae", "Reptilia"]
-# input_size = 50
-# batch_size = 16 
 
 
 transform = transforms.Compose([
@@ -180,26 +178,36 @@ valSize = len(train_dataset) - trainSize
 
 train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [trainSize, valSize])
 
+transform_aug = transforms.Compose([
+            transforms.Resize((input_size,input_size)),
+            transforms.AutoAugment(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225])
+        ])
+
+if data_augmentation == True :
+    train_dataset.transform = transform_aug
+
 train_dataset = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size,
                                            shuffle=True,
-                                           num_workers=1)
+                                           )
 
 val_dataset = torch.utils.data.DataLoader(val_dataset,
                                            batch_size=batch_size,
                                            shuffle=False,
-                                           num_workers=1)
+                                           )
 
 test_dataset = torch.utils.data.DataLoader(test_dataset,
                                            batch_size=batch_size,
                                            shuffle=True,
-                                           num_workers=1)
-
+                                           )
 
 activation_map = {"ReLU":nn.ReLU(), "GELU":nn.GELU(), "SiLU":nn.SiLU(), "Mish":nn.Mish()}
 
 activation = activation_map[activation]
-cnn = CNN(filters,activation,batch_normalisation,dropout,learning_rate,input_size,kernel_size,pool_kernel_size) 
+cnn = CNN(filters,activation,batch_normalisation,dropout,learning_rate,input_size,kernel_size,pool_kernel_size,2) 
 trainer = pl.Trainer(max_epochs=epochs) 
 trainer.fit(cnn,train_dataset,val_dataset)
 
