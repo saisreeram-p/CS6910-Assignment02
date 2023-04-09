@@ -3,6 +3,11 @@
 ### Instructions to create a model , train , predict CNN Network :
 1. Install the required modules/libraries before running
 
+2. To run the train.py
+ ```
+python train.py --wandb_entity myname --wandb_project myprojectname
+ ```
+All the argumets are listed below 
 
 | Name | Default Value | Description |
 | :---: | :----------: | :--------|
@@ -20,5 +25,5 @@
 | `-ks`, `--kernel_size` | 3 | Conv kernel size |
 | `-pks`, `--pool_kernel_size` | 2 | Max2dpool kernel size |
 | `-fz`, `--filter_size` | 64 | filter size |
-| `-fl`, `--filter_organisation` | False    | choices = [same, half, double] filter_organisation with same size or half or double |
+| `-fl`, `--filter_organisation` | same | choices = [same, half, double] filter_organisation with same size or half or double |
 
