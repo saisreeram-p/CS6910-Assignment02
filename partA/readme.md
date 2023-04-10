@@ -6,6 +6,8 @@
 2. To run the train.py
  ```
 python train.py --wandb_entity myname --wandb_project myprojectname
+
+python train.py -dp inaturalist_12K -e 5 -b 16 -lr 0.00001 -a GELU -bn True -da False -do 0.3 -iz 256 -ks 3 -pks 3 -fz 64 -fl same
  ```
 All the argumets are listed below 
 
