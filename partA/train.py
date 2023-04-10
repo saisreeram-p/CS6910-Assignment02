@@ -77,6 +77,7 @@ class CNN(pl.LightningModule):
     train_loss =  torch.stack(self.train_step_loss).mean()
     val_acc =  torch.stack(self.val_step_acc).mean()
     val_loss =  torch.stack(self.val_step_loss).mean()
+
     wandb.log({"train_loss":train_loss.item(),"train_acc":train_acc.item(),"val_loss":val_loss.item(),"val_acc":val_acc.item()})
     self.train_step_acc.clear() 
     self.train_step_loss.clear() 
@@ -104,6 +105,10 @@ class CNN(pl.LightningModule):
     self.log('test_acc', acc,on_epoch = True,on_step = False,prog_bar=True)
     return loss
 
+  def predict_step(self, batch,batch_idx,dataloader_idx=0):
+    trainX,trainY = batch
+    output = self(trainX)
+    return output.argmax(dim = 1)
 
 import argparse
 parser = argparse.ArgumentParser()
