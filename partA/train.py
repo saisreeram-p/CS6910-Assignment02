@@ -152,9 +152,9 @@ filter_organisation = args.filter_organisation
 if(filter_organisation == "same"):
     filters = [filter_size]*5
 elif filter_organisation == "half":
-    filters = [filter_size/2,filter_size/4,filter_size/8,filter_size/16,filter_size/32]
+    filters = [filter_size,filter_size//2,filter_size//4,filter_size//8,filter_size//16]
 else :
-    filters = [filter_size*2,filter_size*4,filter_size*8,filter_size*16,filter_size*32]
+    filters = [filter_size,filter_size*2,filter_size*4,filter_size*8,filter_size*16]
 
 
 wandb.login(key = "8d6c17aa48af2229c26cbc16513ef266358c0b96")
