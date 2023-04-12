@@ -2,8 +2,23 @@
 ## Author : P.Sai Sree Ram CS22M076
 ### Instructions to create a model , train , predict CNN Network :
 1. Install the required modules/libraries before running
+2. Maintain proper folder structure of the dataset
+```
+baseDir = inaturalist_12K
+trainDir = baseDir+"/train/"
+testDir = baseDir+"/val/"
+```
+3. To To create a model
+```
+cnn = CNN(filters,activation,batch_normalisation,dropout,learning_rate,input_size,kernel_size,pool_kernel_size,2) 
+```
+4. To train the modal
+```
+trainer = pl.Trainer(max_epochs=epochs) 
+trainer.fit(cnn,train_dataset,val_dataset)
+```
 
-2. To run the train.py
+5. To run the train.py
  ```
 python train.py --wandb_entity myname --wandb_project myprojectname
 
