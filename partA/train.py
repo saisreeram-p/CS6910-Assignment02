@@ -206,7 +206,7 @@ val_dataset = torch.utils.data.DataLoader(val_dataset,
 
 test_dataset = torch.utils.data.DataLoader(test_dataset,
                                            batch_size=batch_size,
-                                           shuffle=True,
+                                           shuffle=False,
                                            )
 
 activation_map = {"ReLU":nn.ReLU(), "GELU":nn.GELU(), "SiLU":nn.SiLU(), "Mish":nn.Mish()}
